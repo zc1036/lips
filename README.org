@@ -55,6 +55,7 @@ ohayou~~~
 
 #+BEGIN_SRC
 ~(var blah "text")
+~blah
 #+END_SRC
 
     Output:
@@ -69,6 +70,7 @@ text
 
 #+BEGIN_SRC
 ~(fn add (&rest nums)
+    (format t "Sum of ~{~a ~}: " nums)
     (apply #'+ nums))
 ~(add 1 2 3)
 #+END_SRC
@@ -76,7 +78,7 @@ text
     Output:
 
 #+BEGIN_SRC
-6
+Sum of 1 2 3 : 6
 #+END_SRC
 
 *** Executing arbitrary lisp code
