@@ -29,7 +29,7 @@
 
     Same as =defun= except it does not evaluate to the name of the function.
 
-*** =VAL= => /name/ /value/ => /nothing/
+*** =VAL= /name/ /value/ => /nothing/
 
     Same as =defparameter= except it does not evaluate to the name of the variable.
 
