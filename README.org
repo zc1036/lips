@@ -11,7 +11,7 @@
 
    To cause lips to emit a literal =~= character in your writing, escape it by prefixing it with another =~= like so: =~~=.
 
-   The values to which function calls are printed, but the functions can print things themselves with things like =FORMAT= and =PRINC= as well.
+   The values to which function calls evaluate are printed, but the functions can print things themselves with things like =FORMAT= and =PRINC= as well.
 
 ** Functions
 
