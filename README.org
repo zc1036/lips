@@ -1,0 +1,100 @@
+
+* lips: The non-dumb text preprocessor
+
+  One sultry summer's afternoon, I tried to write an essay using Markdown. I wanted to have references, and I didn't want to maintain the reference ID manually if I moved things around. Attempting to use the C preprocessor for Markdown immediately didn't go well, and then I tried m4. m4 was much better, but it failed when I tried to pass arguments to a macro that contained commas. Either it doesn't work at all or it's too hard to figure out how to quote stuff, so I dumped it and wrote an extremely simple preprocessor in Common Lisp that doesn't have these problems.
+
+** Usage
+
+   All text passes through the preprocessor unaltered except when prefixed by a =~= character. The =~= character interprets the subsequent text as a lisp object and evaluates it, printing the result of the evaluation.
+
+   If the subsequent character is whitespace, the evaluation of a form consumes it without printing it. This is so that, for example, function definitions do not needlessly cause newlines to be emitted.
+
+   To cause lips to emit a literal =~= character in your writing, escape it by prefixing it with another =~= like so: =~~=.
+
+   The values to which function calls are printed, but the functions can print things themselves with things like =FORMAT= and =PRINC= as well.
+
+** Functions
+
+*** =INCLUDE-TEXT= /filename/ => /nothing/
+
+    Treats the contents of the file /filename/ as if they had appeared in place of the call to =INCLUDE-TEXT=.
+
+*** =INCLUDE-DEFS= /filename/ => /nothing/
+
+    Loads the given /filename/ as plain Common Lisp source code.
+
+** Convenience functions
+
+*** =FN= /name/ /lambda-list/ /body.../ => /nothing/
+
+    Same as =defun= except it does not evaluate to the name of the function.
+
+*** =VAL= => /name/ /value/ => /nothing/
+
+    Same as =defparameter= except it does not evaluate to the name of the variable.
+
+** Examples
+
+*** Simple example
+
+    Input:
+
+#+BEGIN_SRC
+ohayou~~~~~~
+#+END_SRC
+
+    Output:
+
+#+BEGIN_SRC
+ohayou~~~
+#+END_SRC
+
+*** Variable definition
+
+    Input:
+
+#+BEGIN_SRC
+~(var blah "text")
+#+END_SRC
+
+    Output:
+
+#+BEGIN_SRC
+text
+#+END_SRC
+
+*** Function definition
+
+    Input:
+
+#+BEGIN_SRC
+~(fn add (&rest nums)
+    (apply #'+ nums))
+~(add 1 2 3)
+#+END_SRC
+
+    Output:
+
+#+BEGIN_SRC
+6
+#+END_SRC
+
+*** Executing arbitrary lisp code
+
+    The true power of using lisp as a preprocessor is evident when writing more complicated definitions. If using SBCL, this example must be run without the =--no-userinit= flag because it causes ASDF not to be loaded.
+
+    Input:
+
+#+BEGIN_SRC
+~(progn
+    (asdf:load-system :drakma)
+
+    (let ((input (drakma:http-request "http://google.com"
+                                      :want-stream t)))
+        #| Use input... |#
+        (close input)))
+#+END_SRC
+
+** Compatibility
+
+   I have only tested lips with SBCL, but it shouldn't be using any platform-specific code, so others should be fine. Pull requests for compatibility fixes are welcome.
