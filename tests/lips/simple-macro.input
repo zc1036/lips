@@ -1,0 +1,4 @@
+This test tests a simple macro.
+
+~(val x "this should be the output.")
+~x

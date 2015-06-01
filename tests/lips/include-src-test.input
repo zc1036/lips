@@ -1,0 +1,23 @@
+
+This test tests the inclusion of text files.
+
+~(fn getenv (name &optional default)
+     ;; From http://cl-cookbook.sourceforge.net/os.html
+     
+     #+CMU
+     (let ((x (assoc name ext:*environment-list*
+                     :test #'string=)))
+         (if x (cdr x) default))
+     #-CMU
+     (or
+      #+Allegro (sys:getenv name)
+      #+CLISP (ext:getenv name)
+      #+ECL (si:getenv name)
+      #+SBCL (sb-unix::posix-getenv name)
+      #+LISPWORKS (lispworks:environment-variable name)
+      default))
+
+~(include-defs (concatenate 'string (getenv "DIR")
+                                    "/lips/include-src-test.input.include"))
+
+~(fn-from-include "lol")
