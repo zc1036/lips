@@ -4,21 +4,6 @@
 (make-package :lips :use '(:cl))
 (in-package :lips)
 
-;; Adapted from http://cl-cookbook.sourceforge.net/os.html
-(define-symbol-macro command-line-args
-    (or 
-     #+SBCL *posix-argv*  
-     #+LISPWORKS system:*line-arguments-list*
-     #+CMU extensions:*command-line-words*
-     nil))
-
-(defparameter *characters* '(#\! #\" #\# #\$ #\% #\& #\' #\( #\) #\* #\+ #\, #\- #\. #\/ #\0 #\1
-                             #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\: #\; #\< #\= #\> #\? #\@ #\A #\B
-                             #\C #\D #\E #\F #\G #\H #\I #\J #\K #\L #\M #\N #\O #\P #\Q #\R #\S
-                             #\T #\U #\V #\W #\X #\Y #\Z #\[ #\\ #\] #\^ #\_ #\` #\a #\b #\c #\d
-                             #\e #\f #\g #\h #\i #\j #\k #\l #\m #\n #\o #\p #\q #\r #\s #\t #\u
-                             #\v #\w #\x #\y #\z #\{ #\| #\} #\~ #\Space #\Newline))
-
 (defparameter *hot-char* #\~)
 
 (defparameter *original-readtable* *readtable*)
@@ -32,7 +17,7 @@
 (defparameter *paragraph-separator* nil)
 
 ;; Read characters until we get to a lisp form.
-(defun read-lips-char (stream read-char)
+(defun read-lips-char (stream)
     ;; We print to an in-memory buffer to avoid the inefficiency of
     ;; printing one character at a time.
     (princ (with-output-to-string (stdout)
@@ -41,7 +26,7 @@
                  ;; Loop until there are no more characters in the
                  ;; input stream.
                  (loop
-                    for char = read-char then (read-char stream nil nil t)
+                    for char = (read-char stream nil nil t)
                     while char
                     do
                       (when (not (eq char #\newline))
@@ -62,8 +47,7 @@
                                  (princ *hot-char*)
                                  (read-char stream nil nil t))
 
-                             (let* ((*readtable* *original-readtable*)
-                                    (*package* (find-package :lips))
+                             (let* ((*package* (find-package :lips))
                                     (obj (eval (macroexpand (read stream)))))
                                  (when (not (null obj))
                                      (princ obj)))))
@@ -76,11 +60,6 @@
                          (setf last-char-was-newline nil)
                          (princ char))))))))
 
-(defparameter lips-readtable (copy-readtable *readtable*))
-
-(loop for char in *characters* do
-     (set-macro-character char #'read-lips-char nil lips-readtable))
-
 (defparameter *finish-hooks* nil)
 
 (defun add-finish-hook (func)
@@ -88,10 +67,8 @@
     (values))
 
 (defun main ()
-    (let ((*readtable* lips-readtable))
-        ;; (with-open-file (input (cadr command-line-args) :direction :input))
-        (loop while (read *standard-input* nil))
-        (mapc #'princ-if *finish-hooks*)))
+    (read-lips-char *standard-input*)
+    (mapc #'princ-if *finish-hooks*))
 
 ;;; Functions for use in text to be processed.
 
@@ -120,6 +97,6 @@
 ;; Treats "filename" as if its contents had appeared in the original
 ;; file at the position of "include-text".
 (defun include-text (filename)
-    (let ((*readtable* lips-readtable))
-        (include-defs filename))
+    (with-open-file (input filename)
+        (read-lips-char input))
     (values))
