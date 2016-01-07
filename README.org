@@ -33,6 +33,26 @@
 
     Same as =defparameter= except it does not evaluate to the name of the variable.
 
+*** =SETF-Q= /place/ /value/ => /nothing/
+
+    Same as =SETF= but without a return value.
+
+*** =ADD-FINISH-HOOK= /function/ => /nothing/
+
+    Pushes the argument onto the list =*FINISH-HOOKS*= and returns nothing.
+
+** Variables
+
+*** =*PARAGRAPH-SEPARATOR*=
+
+    This value or function is printed or called, if non-NIL, whenever
+    two consecutive newlines are encountered.
+
+*** =*FINISH-HOOKS*=
+
+    A list of functions that will be called and whose return values
+    will be printed when the end of the input is encountered.
+
 ** Examples
 
 *** Simple example
