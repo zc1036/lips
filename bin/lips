@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# From http://stackoverflow.com/a/246128/5451968
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+sbcl --noinform --disable-debugger --load "$DIR/../source/lips.lisp" --eval "(lips::main)" --quit "$@"

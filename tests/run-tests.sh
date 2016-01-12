@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # From http://stackoverflow.com/a/246128/4487961
-export DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 TEST_OUTPUTFILE="$DIR/test-output.tmp"
-LIPS="sbcl --noinform --disable-debugger --no-sysinit --no-userinit --load '$DIR/../source/lips.lisp' --eval \"(lips::main)\" --quit"
+LIPS="$DIR/../bin/lips"
 
 echo Running tests...
 
@@ -27,7 +27,7 @@ for TEST in "$DIR"/lips/*.input; do
         echo "Error: solution to test, expected to be at \"$SOLUTION_FILE\", does not exist"
         ((FAIL++))
     else
-        eval $LIPS <"$TEST" >"$TEST_OUTPUTFILE"
+        (cd "$DIR/lips" && eval $LIPS <"$TEST" >"$TEST_OUTPUTFILE")
 
         diff --brief "$TEST_OUTPUTFILE" "$SOLUTION_FILE" >/dev/null
 
@@ -44,8 +44,8 @@ done
 rm -f "$TEST_OUTPUTFILE"
 
 if [ $FAIL -eq 0 ]; then
-    echo All tests passed!
+    echo 'All tests passed!'
 else
-    echo $FAIL tests failed
+    echo "$FAIL test(s) failed"
     exit 1
 fi
