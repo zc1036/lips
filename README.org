@@ -68,7 +68,7 @@ ohayou~~~
     Input:
 
 #+BEGIN_SRC
-~(var blah "text")
+~(defparameter-q blah "text")
 ~blah
 #+END_SRC
 
@@ -83,7 +83,7 @@ text
     Input:
 
 #+BEGIN_SRC
-~(fn add (&rest nums)
+~(defun-q add (&rest nums)
     (format t "Sum of ~{~a ~}: " nums)
     (apply #'+ nums))
 ~(add 1 2 3)
@@ -93,6 +93,22 @@ text
 
 #+BEGIN_SRC
 Sum of 1 2 3 : 6
+#+END_SRC
+
+*** Finish hooks
+
+    Input:
+
+#+BEGIN_SRC
+~(add-finish-hook (lambda () "Bye there!"))
+Hi there!
+#+END_SRC
+
+    Output:
+
+#+BEGIN_SRC
+Hi there!
+Bye there!
 #+END_SRC
 
 *** Executing arbitrary lisp code

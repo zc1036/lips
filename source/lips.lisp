@@ -22,7 +22,6 @@
                  (t x))))
         (when res (princ res))))
 
-;; Read characters until we get to a lisp form.
 (defun process-stream (&optional (stream *standard-input*))
     ;; If the first line of the file is a hashbang, discard the line.
     (let ((first-char (read-char stream nil #\.)))
