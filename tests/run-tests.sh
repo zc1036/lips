@@ -41,10 +41,11 @@ for TEST in "$DIR"/lips/*.input; do
     fi
 done
 
+rm -f "$TEST_OUTPUTFILE"
+
 if [ $FAIL -eq 0 ]; then
     echo All tests passed!
 else
     echo $FAIL tests failed
+    exit 1
 fi
-
-rm -f "$TEST_OUTPUTFILE"

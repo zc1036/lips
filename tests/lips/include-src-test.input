@@ -1,7 +1,7 @@
 
 This test tests the inclusion of text files.
 
-~(fn getenv (name &optional default)
+~(defun-q getenv (name &optional default)
      ;; From http://cl-cookbook.sourceforge.net/os.html
      
      #+CMU

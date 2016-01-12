@@ -1,7 +1,7 @@
 
 * lips: The non-dumb text preprocessor
 
-  One sultry summer's afternoon, I tried to write an essay using Markdown. I wanted to have references, and I didn't want to maintain the reference ID manually if I moved things around. Attempting to use the C preprocessor for Markdown immediately didn't go well, and then I tried m4. m4 was much better, but it failed when I tried to pass arguments to a macro that contained commas. Either it doesn't work at all or it's too hard to figure out how to quote stuff, so I dumped it and wrote an extremely simple preprocessor in Common Lisp that doesn't have these problems.
+  One sultry summer's afternoon, I tried to write an essay using Markdown. I wanted to have references, and I didn't want to have to manually update the reference IDs to maintain numerical order if I moved text around. Attempting to use the C preprocessor for Markdown immediately didn't go well, and then I tried m4. m4 was much better, but it failed when I tried to pass arguments to a macro that contained commas. Either it doesn't work at all or it's too hard to figure out how to quote stuff, so I dumped it and wrote an extremely simple preprocessor in Common Lisp that doesn't have these problems.
 
 ** Usage
 
@@ -25,11 +25,11 @@
 
 ** Convenience functions
 
-*** =FN= /name/ /lambda-list/ /body.../ => /nothing/
+*** =DEFUN-Q= /name/ /lambda-list/ /body.../ => /nothing/
 
     Same as =defun= except it does not evaluate to the name of the function.
 
-*** =VAL= /name/ /value/ => /nothing/
+*** =DEFPARAMETER-Q= /name/ /value/ => /nothing/
 
     Same as =defparameter= except it does not evaluate to the name of the variable.
 
@@ -39,19 +39,13 @@
 
 *** =ADD-FINISH-HOOK= /function/ => /nothing/
 
-    Pushes the argument onto the list =*FINISH-HOOKS*= and returns nothing.
+    Adds the function to the beginning of a list of functions that are called when the end of the input stream is reached.
 
 ** Variables
 
 *** =*PARAGRAPH-SEPARATOR*=
 
-    This value or function is printed or called, if non-NIL, whenever
-    two consecutive newlines are encountered.
-
-*** =*FINISH-HOOKS*=
-
-    A list of functions that will be called and whose return values
-    will be printed when the end of the input is encountered.
+    This value or function is printed or called, if non-NIL, whenever two consecutive newlines are encountered.
 
 ** Examples
 

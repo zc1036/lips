@@ -1,5 +1,5 @@
 This test tests a simple function.
 
-~(fn x (y) (format t "A simple function resulting in ~a" (+ 100 y)))
+~(defun-q x (y) (format t "A simple function resulting in ~a" (+ 100 y)))
 
 ~(x 123)

@@ -1,0 +1,3 @@
+#!/usr/bin/lisp
+
+Tests the hashbang ignoration feature.
