@@ -10,6 +10,8 @@
 
 (in-package :lips)
 
+(asdf:load-system :unix-opts)
+
 (defparameter *hot-char* #\~)
 
 (defparameter *original-readtable* *readtable*)
@@ -22,7 +24,7 @@
                  (t x))))
         (when res (princ res))))
 
-(defun process-stream (&optional (stream *standard-input*))
+(defun process-stream (stream)
     ;; If the first line of the file is a hashbang, discard the line.
     (let ((first-char (read-char stream nil)))
         (when (and first-char (char= #\# first-char) (char= #\! (peek-char nil stream nil #\.)))
@@ -66,7 +68,19 @@
 (defparameter *finish-hooks* nil)
 
 (defun main ()
-    (process-stream)
+    (opts:define-opts)
+
+    (multiple-value-bind (opts args) (opts:get-opts)
+        (declare (ignore opts))
+        
+        (if args
+            (loop for filename in args do
+                 (if (string= filename "-")
+                     (process-stream *standard-input*)
+                     (with-open-file (input-stream filename)
+                         (process-stream input-stream))))
+            (process-stream *standard-input*)))
+
     (mapc #'princ-if *finish-hooks*))
 
 ;;; Functions for use in text to be processed.

@@ -3,7 +3,7 @@
 
   One sultry summer's afternoon, I tried to write an essay using Markdown. I wanted to have references, and I didn't want to have to manually update the reference IDs to maintain numerical order if I moved text around. Attempting to use the C preprocessor for Markdown immediately didn't go well, and then I tried m4. m4 was much better, but it failed when I tried to pass arguments to a macro that contained commas. Either it doesn't work at all or it's too hard to figure out how to quote stuff, so I dumped it and wrote an extremely simple preprocessor in Common Lisp that doesn't have these problems.
 
-** Usage
+** The basic idea
 
    All text passes through the preprocessor unaltered except when prefixed by a =~= character. The =~= character interprets the subsequent text as a lisp object and evaluates it, printing the result of the evaluation.
 
@@ -12,6 +12,19 @@
    To cause lips to emit a literal =~= character in your writing, escape it by prefixing it with another =~= like so: =~~=.
 
    The values to which function calls evaluate are printed, but the functions can print things themselves with things like =FORMAT= and =PRINC= as well.
+
+** Invocation
+
+   When invoked with no command-line arguments, lips operates on the text supplied through the standard input stream. Otherwise, the command-line arguments are treated as the names of files which are processed in order of appearance. The special filename "-" indicates that the standard input stream should be processed at that point.
+
+   For example,
+
+#+BEGIN_SRC
+   lips <foo.lips          # Process foo.lips
+   lips foo.lips bar.lips  # Process foo.lips and bar.lips, in that order
+   lips foo.lips <bar.lips # Process foo.lips only
+   lips foo.lips - baz.lips <bar.lips # Process foo.lips, bar.lips, and baz.lips, in that order
+#+END_SRC
 
 ** Functions
 
@@ -126,6 +139,10 @@ Bye there!
         #| Use input... |#
         (close input)))
 #+END_SRC
+
+** Dependencies
+
+   Depends on the ASDF package UNIX-OPTS, which is available from https://www.quicklisp.org/ .
 
 ** Compatibility
 
