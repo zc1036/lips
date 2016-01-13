@@ -24,8 +24,8 @@
 
 (defun process-stream (&optional (stream *standard-input*))
     ;; If the first line of the file is a hashbang, discard the line.
-    (let ((first-char (read-char stream nil #\.)))
-        (when (and (char= #\# first-char) (char= #\! (peek-char nil stream nil #\.)))
+    (let ((first-char (read-char stream nil)))
+        (when (and first-char (char= #\# first-char) (char= #\! (peek-char nil stream nil #\.)))
             (read-line stream nil)
             (setf first-char (read-char stream nil)))
         ;; Loop until there are no more characters in the
