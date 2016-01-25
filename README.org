@@ -140,6 +140,24 @@ Bye there!
         (close input)))
 #+END_SRC
 
+** Special behavior for function variables
+
+   If the object that occurs after a =~= character is a function, then that function is called and the return value is printed if non-nil. The value of the special variable =*STANDARD-INPUT*= is bound to the stream currently being processed, so that the function can call =READ= and family to read from the current input file.
+
+   This behavior allows for more convenient syntax, i.e.
+
+#+BEGIN_SRC
+(defparameter-q b (lambda () (format nil "<b>~a</b>" (read))))
+
+This text is ~b"bold".
+#+END_SRC
+
+   Output:
+
+#+BEGIN_SRC
+This text is <b>bold</b>.
+#+END_SRC
+
 ** Dependencies
 
    Depends on the ASDF package UNIX-OPTS, which is available from https://www.quicklisp.org/ .

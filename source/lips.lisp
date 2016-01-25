@@ -52,10 +52,9 @@
                     (progn
                         (write-char *hot-char*)
                         (read-char stream nil))
-                    (let* ((*package* (find-package :lips-user))
-                           (obj (eval (macroexpand (read stream t)))))
-                        (when obj
-                            (princ obj)))))
+                    (let ((*package* (find-package :lips-user))
+                          (*standard-input* stream))
+                        (princ-if (eval (macroexpand (read stream)))))))
                ((char= char #\newline)
                 (write-char char)
                 (when last-char-was-newline
