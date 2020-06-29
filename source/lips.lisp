@@ -115,10 +115,10 @@
                 (when (not *in-paragraph*)
                   (princ-if *paragraph-begin*)
                   (setf *in-paragraph* t))
-                (setf last-char-was-newline nil)
                 (princ-if (update-quote-char char
                                              (or last-char-was-space
                                                  last-char-was-newline)))
+                (setf last-char-was-newline nil)
                 (setf last-char-was-space (member char *whitespace*))))
            finally
              (when *in-paragraph*
