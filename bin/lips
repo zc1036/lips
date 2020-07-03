@@ -9,4 +9,4 @@ while [ -h "$SOURCE" ]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-sbcl --noinform --disable-debugger --load "$DIR/../source/lips.lisp" --eval "(lips::main)" --quit "$@"
+sbcl --script "$DIR/../source/lips.lisp" "$@"
