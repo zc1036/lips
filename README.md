@@ -114,6 +114,30 @@ For example,
 
 ## Builtin functions/macros
 
+These functions are defined in the `LIPS-USER` package and are accessible from lips macro substitutions or inside lisp source files executed by `INCLUDE-DEFS`.
+
+### `MACRO` _name_ _arg-list_ _body..._ => _nothing_
+
+Defines a textual macro that automatically reads _N_ arguments surrounded by braces (where N is the number of arguments in _arg-list_). Implementationally, this defines a symbol macro named _name_.
+
+Also defines a function named $_name_ that can be used from inside other macros.
+
+Example:
+
+    (macro bold (something)
+      (% "<b>~a</b>" something))
+    
+    (macro bolditalic (whatever)
+      (% "<i>~a</i>" ($bold whatever)))
+      
+    \bold{hi}
+    \bolditalic{bye}
+    
+Produces
+
+    <b>hi</b>
+    <i><b>bye</b></i>
+
 ### `%` _format-string_ _format-args..._ => _nothing_
 
 Format string and print to output file. Format specifiers are according to the [`FORMAT`](http://www.lispworks.com/documentation/lw50/CLHS/Body/f_format.htm) function.
@@ -140,7 +164,7 @@ Treats the contents of the file _filename_ as if they had appeared in place of t
 
 Loads the given _filename_ as plain Common Lisp source code.
 
-## Convenience functions
+## Convenience Functions
 
 ### `DEFN` _name_ _lambda-list_ _body..._ => _nothing_
 
