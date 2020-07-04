@@ -55,6 +55,7 @@
 
 (defun call-or-write (object)
   (etypecase object
+    (null (values))
     (function
      (funcall object))
     (string
@@ -97,66 +98,68 @@
 (defparameter *internal-write-update-state* nil)
 
 (defun read-interpolated-string (&optional arg-char end-char (allow-eof t))
-  (with-output-to-string (output-stream)
-    (let ((end-char-nest-level 1)
-          (last-char nil)
-          (in-paragraph nil))
-      (let ((*internal-write-update-state*
-             (lambda (obj)
-               (write-object-update-state last-char in-paragraph allow-eof obj))))
-        (loop
-           for char = (read-char *standard-input* (not allow-eof))
-           while char
-           do
-             (cond
-               ((and *use-smart-quotes*
-                     (or (char= char #\") (char= char #\')))
-                (write-char-update-state last-char in-paragraph allow-eof
-                                         (update-quote-char char last-char)))
-               ((char= char *hot-char*)
-                (let ((next-char (peek-char)))
-                  (cond
-                    ;; escaped hot-char, like \\, or escaped opener or
-                    ;; closer, like \}
-                    ((or (char= next-char *hot-char*)
-                         (and end-char (char= next-char end-char))
-                         (and arg-char (char= next-char arg-char)))
-                     (write-char-update-state last-char in-paragraph allow-eof (read-char)))
-                    ;; any other char, evaluate the lisp code
-                    (t
-                     (let ((result (eval (macroexpand (read)))))
-                       (when result
-                         (write-object-update-state last-char in-paragraph allow-eof result)))))))
-               ((and arg-char (char= char arg-char))
-                (incf end-char-nest-level)
-                (write-char-update-state last-char in-paragraph allow-eof char))
-               ((and end-char (char= char end-char))
-                (when (= 0 (decf end-char-nest-level))
-                  (return))
-                (write-char-update-state last-char in-paragraph allow-eof char))
-               (t
-                (write-char-update-state last-char in-paragraph allow-eof char))))
-        (when in-paragraph
-          (call-or-write *paragraph-end*))))))
+  (let ((output-string (make-array 0 :element-type 'character :fill-pointer 0 :adjustable t)))
+    (with-output-to-string (output-stream output-string)
+      (let ((*standard-output* output-stream)
+            (end-char-nest-level 1)
+            (last-char nil)
+            (in-paragraph nil))
+        (let ((*internal-write-update-state*
+               (lambda (obj)
+                 (write-object-update-state last-char in-paragraph allow-eof obj))))
+          (loop
+             for char = (read-char *standard-input* (not allow-eof))
+             while char
+             do
+               (cond
+                 ((and *use-smart-quotes*
+                       (or (char= char #\") (char= char #\')))
+                  (write-char-update-state last-char in-paragraph allow-eof
+                                           (update-quote-char char last-char)))
+                 ((char= char *hot-char*)
+                  (let ((next-char (peek-char)))
+                    (cond
+                      ;; escaped hot-char, like \\, or escaped opener or
+                      ;; closer, like \}
+                      ((or (char= next-char *hot-char*)
+                           (and end-char (char= next-char end-char))
+                           (and arg-char (char= next-char arg-char)))
+                       (write-char-update-state last-char in-paragraph allow-eof (read-char)))
+                      ;; any other char, evaluate the lisp code
+                      (t
+                       (let ((result (eval (macroexpand (read)))))
+                         (when result
+                           (write-object-update-state last-char in-paragraph allow-eof result)))))))
+                 ((and arg-char (char= char arg-char))
+                  (incf end-char-nest-level)
+                  (write-char-update-state last-char in-paragraph allow-eof char))
+                 ((and end-char (char= char end-char))
+                  (when (= 0 (decf end-char-nest-level))
+                    (return))
+                  (write-char-update-state last-char in-paragraph allow-eof char))
+                 (t
+                  (write-char-update-state last-char in-paragraph allow-eof char)))
+             finally
+               (setf last-char char))
+          (when in-paragraph
+            (call-or-write *paragraph-end*))
+          (values output-string *internal-write-update-state*))))))
 
 (defparameter *current-macro-body* nil)
 
 (defun lips-user::read-macro-argument (&optional (arg-char #\{) (end-char #\}) macro-name)
-  (with-output-to-string (arg)
-    (let ((*standard-output* arg))
-      (loop
-         for char = (read-char *standard-input*)
-         do
-           (cond
-             ((member char *whitespace*)
-              :do-nothing)
-             ((char= char arg-char)
-              (write-string (read-interpolated-string arg-char end-char nil))
-              (return))
-             (t
-              (error "Unexpected character '~a' while reading argument for macro ~a"
-                     char
-                     (or macro-name *current-macro-body* ""))))))))
+  (loop
+     for char = (read-char *standard-input*)
+     do
+       (cond
+         ((member char *whitespace*)
+          :do-nothing)
+         ((char= char arg-char)
+          (return (read-interpolated-string arg-char end-char nil)))
+         (t
+          (error "Unexpected character '~a' while reading argument for macro ~a"
+                 char
+                 (or macro-name *current-macro-body* ""))))))
 
 (defparameter *lips-readtable* (copy-readtable *readtable*))
 
@@ -168,7 +171,9 @@
 (defun process-stream (stream)
   (let ((*standard-input* stream)
         (*readtable* *lips-readtable*))
-    (write-string (read-interpolated-string))))
+    (multiple-value-bind (result writer-fn) (read-interpolated-string)
+      (write-string result)
+      writer-fn)))
 
 (defmacro when-option ((options opt) &body body)
   `(let ((it (getf ,options ,opt)))
@@ -206,14 +211,16 @@
 
     (if args
         (loop for filename in args do
-             (if (string= filename "-")
-                 (process-stream *standard-input*)
-                 (with-open-file (input-stream filename)
-                   (process-stream input-stream)))
-             (mapc #'princ-if *finish-hooks*))
+             (let ((writer (if (string= filename "-")
+                               (process-stream *standard-input*)
+                               (with-open-file (input-stream filename)
+                                 (process-stream input-stream)))))
+               (let ((*internal-write-update-state* writer))
+                 (mapc #'princ-if *finish-hooks*))))
         (progn
-          (process-stream *standard-input*)
-          (mapc #'princ-if *finish-hooks*)))))
+          (let ((writer (process-stream *standard-input*)))
+            (let ((*internal-write-update-state* writer))
+              (mapc #'princ-if *finish-hooks*)))))))
 
 ;;; Functions for use in text to be processed.
 

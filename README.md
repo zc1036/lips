@@ -3,14 +3,18 @@
 
 **Version 2 is out!**
 
-One sultry summer's afternoon, I tried to write an essay using Markdown. I wanted to have references, and I didn't want to have to manually update the reference IDs to maintain numerical order if I moved text around. Attempting to use the C preprocessor for Markdown immediately didn't go well, and then I tried m4. m4 was much better, but it failed when I tried to pass arguments to a macro that contained commas. Either it doesn't work at all or it's too hard to figure out how to quote stuff, so I dumped it and wrote an extremely simple preprocessor in Common Lisp that doesn't have these problems.
+**tl;dr:** lips is a programmable markup language based on Common Lisp. It's a competitor with things like Markdown and Emacs' Org-mode, but it has more in common with LaTeX in that its engine is fully scriptable.
 
 It sports:
 
-- An elegant but powerful Common Lisp-based macro system
+- An elegant but powerful Common Lisp-based macro system that is turing complete. (You may not know it yet but you want this.)
 - Automatic paragraph separation (e.g. auto-insert `<p>` tags if you want)
 - Smart quotes
 - more things
+
+## Background
+
+One sultry summer's afternoon, I tried to write an essay using Markdown. I wanted to have references, and I didn't want to have to manually update the reference IDs to maintain numerical order if I moved text around. Attempting to use the C preprocessor for Markdown immediately didn't go well, and then I tried m4. m4 was much better, but it failed when I tried to pass arguments to a macro that contained commas. Either it doesn't work at all or it's too hard to figure out how to quote stuff, so I dumped it and wrote an extremely simple preprocessor in Common Lisp that doesn't have these problems.
 
 ## The basic idea
 
@@ -294,7 +298,38 @@ Input:
                                           :want-stream t)))
             #| Use input... |#
             (close input)))
+            
+### Automatic footnote generation
+
+Here's an example of using all the above to automatically generate footnotes:
+
+
+    \(defv *footnotes* nil)
     
+    \(macro footnote (text)
+       (push text *footnotes*)
+       (% "[~a]" (length *footnotes*)))
+    
+    \(defn print-footnotes ()
+       ($! #\Newline)
+       (loop for note in (reverse *footnotes*) for i from 1 to (length *footnotes*) do
+         (%! "~a. " i)
+         (% "~a~%" note)))
+    
+    \(add-finish-hook #'print-footnotes)
+    
+    Lorem \footnote{footnote 1} ipsum \footnote{footnote 2} dolor sit amet \footnote{footnote 3}.
+
+Produces
+
+    Lorem [1] ipsum [2] dolor sit amet [3].
+
+    1. footnote 1
+    2. footnote 2
+    3. footnote 3
+    
+And if you rearrange the footnotes in the text, the numbering will update automatically. Now you don't have to manually manage footnotes like you did in Markdown, and you didn't have to make some special build of the parser to do it!
+
 ## Dependencies
 
 lips depends on the [UNIX-OPTS package](http://quickdocs.org/unix-opts/), which it bundles, so you don't need anything but a Lisp interpreter.
