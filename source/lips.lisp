@@ -21,11 +21,6 @@
 (defparameter *paragraph-begin* nil)
 (defparameter *paragraph-end* nil)
 (defparameter *finish-hooks* nil)
-
-;;(asdf:load-system :unix-opts)
-
-(load "unix-opts.lisp")
-
 (defparameter *hot-char* #\\)
 
 (defun princ-if (x)
@@ -42,10 +37,11 @@
 (defparameter *use-smart-quotes* nil)
 
 (defparameter *left-quote-exceptions*
-  '(#\{ #\( #\[))
+  '(#\{ #\( #\[ #\- #\– #\—))
 
 (defun update-quote-char (char last-char)
-  (let ((leftside (or (member last-char *whitespace*)
+  (let ((leftside (or (null last-char)
+                      (member last-char *whitespace*)
                       (member last-char *left-quote-exceptions*))))
     (ecase char
       (#\'
@@ -281,7 +277,7 @@
     (values))
 
 (defmacro $! (obj)
-  `(progn (princ obj)
+  `(progn (princ ,obj)
           nil))
 
 (defmacro %! (&rest args)

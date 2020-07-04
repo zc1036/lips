@@ -84,7 +84,7 @@ You can set the variable `LIPS:*PARAGRAPH-BEGIN*` and `LIPS:*PARAGRAPH-END*` to 
 
 ### Smart quotes
 
-Set `LIPS:*USE-SMART-QUOTES*` to `t` to enable smart-quoting. Smart-quoting respects opening braces, brackets, and parentheses.
+Set `LIPS:*USE-SMART-QUOTES*` to `t` to enable smart-quoting. Smart-quoting respects opening braces, brackets, parentheses, and dashes.
 
     \(setv lips:*use-smart-quotes* t)
     And "then" there 'were' none
@@ -182,7 +182,7 @@ These values or functions are printed or called, if non-NIL, between paragraphs.
     
 ### `*USE-SMART-QUOTES*` 
  
-When non-NIL, converts " and ' to smart-quote equivalents. Respects opening braces, brackets, and parentheses.
+When non-NIL, converts " and ' to smart-quote equivalents. Respects opening braces, brackets, parentheses, and dashes.
 
 ### `*HOT-CHAR*` 
 

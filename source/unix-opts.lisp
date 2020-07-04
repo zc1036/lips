@@ -160,6 +160,8 @@ an argument, it's given but cannot be parsed by argument parser."))
 (defparameter *options* nil
   "List of all defined options.")
 
+(declaim (ftype (function (t) t) make-option))
+
 (defun make-options (opts)
   (mapcar #'make-option opts))
 

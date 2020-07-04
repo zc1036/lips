@@ -9,4 +9,4 @@ while [ -h "$SOURCE" ]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-sbcl --script "$DIR/../source/lips.lisp" "$@"
+sbcl --noinform --load "$DIR/../source/unix-opts.lisp" --script "$DIR/../source/lips.lisp" "$@"
