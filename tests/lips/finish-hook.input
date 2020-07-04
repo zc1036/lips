@@ -1,7 +1,0 @@
-
-Test finish hooks.
-
-~(add-finish-hook (lambda () "x"))
-~(add-finish-hook (lambda () (write-string "foo") (values)))
-
-done.

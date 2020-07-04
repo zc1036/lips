@@ -1,2 +1,0 @@
-
-(defun-q fn-from-include (x) x)

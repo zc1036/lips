@@ -1,4 +1,0 @@
-This test tests a simple macro.
-
-~(defparameter-q x "this should be the output.")
-~x

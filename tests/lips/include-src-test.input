@@ -1,6 +1,0 @@
-
-This test tests the inclusion of text files.
-
-~(include-defs "include-src-test.input.include")
-
-~(fn-from-include "lol")
