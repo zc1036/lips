@@ -18,7 +18,7 @@ One sultry summer's afternoon, I tried to write an essay using Markdown. I wante
 
 ## The basic idea
 
-Taking inspiration from LaTeX, all text passes through the preprocessor unaltered except when prefixed by a `\` character. The `\` character interprets the subsequent text as a lisp object and evaluates it, printing the result of the evaluation. That's it.
+Taking inspiration from LaTeX, all text passes through the preprocessor unaltered except when prefixed by a `\` character. The `\` character interprets the subsequent text as a Lisp object and evaluates it, printing the result of the evaluation. That's it.
 
 ## But that seems too simple
 
@@ -39,13 +39,18 @@ In this example, we begin with a `\` character to make lips evaluate our `MACRO`
 
 Under the hood, `MACRO` is defining a Lisp symbol macro named `HELLO`. The symbol macro gets expanded when `\` calls `MACROEXPAND` on the next Lisp object it reads, and the expansion reads _N_ arguments and calls your function with them. 
 
-Because it works this way, you can put any lisp code after the `\`.
+Because it works this way, you can put any Lisp code after the `\`.
 
 That means that you are by no means limited to using `MACRO`. Everything you see used is stuff you could have written yourself. You can use `DEFUN`, `READ`, `WRITE`, and every other Common Lisp function you like. The only constants are: whatever your code reads (from `*STANDARD-INPUT*`) comes from the input file, and whatever your code writes (to `*STANDARD-OUTPUT*`), or returns, gets written to the output file.
 
 btw, to cause lips to emit a literal `\` character in your writing, escape it by prefixing it with another `\` like so: `\\`.
 
 ## Deeper topics
+
+### Case sensitivity
+
+The Lisp reader isn't case sensitive, so how you capitalize macros or
+functions doesn't matter.
 
 ### Varargs
 
@@ -97,6 +102,28 @@ Produces
 
     And “then” there (‘were’) none
     
+### Avoiding smart quotes
+
+Sometimes you'll want to suppress smart-quote behavior in a particular
+argument to a macro. But smart-quotes are converted when the macro
+argument is read, so by the time your macro sees the text, it already
+has smart-quotes. To get around any kind of formatting, just use `\`
+to evaluate and print a Lisp string:
+
+    Someone once said: "These are dumb-quotes: \"\" '"  don't they look silly?" 
+    
+Produces
+
+    Someone once said: “These are dumb-quotes: " ' don’t they look silly?” 
+
+The `\` starts reading a string, the literal single quote is escaped
+with a backslash (this is Lisp string reader syntax, not the lips
+macro backslash) inside it.
+
+Notice that I have to use two spaces after the end of the string
+object. That's because the Lisp reader consumes a single space, if
+present, after any form it reads.
+    
 ### Markup and formatting
 
 lips tracks certain state based on what gets output to the file. For example, it needs to know what the last character was, because if it's whitespace, then the next " character will be a left-side smart quote, and if not, it will be a right-side smart quote. Another example is that it needs to know when to emit paragraph tags (like `<p>` for HTML).
@@ -118,7 +145,7 @@ For example,
 
 ## Builtin functions/macros
 
-These functions are defined in the `LIPS-USER` package and are accessible from lips macro substitutions or inside lisp source files executed by `INCLUDE-DEFS`.
+These functions are defined in the `LIPS-USER` package and are accessible from lips macro substitutions or inside Lisp source files executed by `INCLUDE-DEFS`.
 
 ### `MACRO` _name_ _arg-list_ _body..._ => _nothing_
 
@@ -284,9 +311,9 @@ Output:
     Hi there!
     Bye there!
 
-### Executing arbitrary lisp code
+### Executing arbitrary Lisp code
 
-The true power of using lisp as a preprocessor is evident when writing more complicated definitions.
+The true power of using Lisp as a preprocessor is evident when writing more complicated definitions.
 
 Input:
 

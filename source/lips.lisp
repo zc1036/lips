@@ -63,7 +63,7 @@
     (t
      (format t "~a" object))))
 
-(defmacro write-char-update-state (last-char in-paragraph allow-eof c)
+(defmacro write-char-update-state (last-char in-paragraph allow-eof c &key (fake nil))
   (let ((c% (gensym)))
     `(progn
        (let ((,c% ,c))
@@ -73,7 +73,8 @@
            (call-or-write *paragraph-begin*)
            (setf ,in-paragraph t))
 
-         (write-char ,c%)
+         (unless ,fake
+           (write-char ,c%))
 
          (when (char= ,c% #\Newline)
            (when (and ,allow-eof ,in-paragraph (char= ,last-char #\Newline))
@@ -82,7 +83,7 @@
 
          (setf ,last-char ,c%)))))
 
-(defmacro write-object-update-state (last-char in-paragraph allow-eof object)
+(defmacro write-object-update-state (last-char in-paragraph allow-eof object &key (fake nil))
   (let ((evald% (gensym))
         (string% (gensym))
         (i% (gensym)))
@@ -93,7 +94,8 @@
             do (write-char-update-state ,last-char
                                         ,in-paragraph
                                         ,allow-eof
-                                        (char ,string% ,i%)))))))
+                                        (char ,string% ,i%)
+                                        :fake ,fake))))))
 
 (defparameter *internal-write-update-state* nil)
 
@@ -105,8 +107,8 @@
             (last-char nil)
             (in-paragraph nil))
         (let ((*internal-write-update-state*
-               (lambda (obj)
-                 (write-object-update-state last-char in-paragraph allow-eof obj))))
+               (lambda (obj &optional fake)
+                 (write-object-update-state last-char in-paragraph allow-eof obj :fake fake))))
           (loop
              for char = (read-char *standard-input* (not allow-eof))
              while char
@@ -291,9 +293,10 @@
   `(progn (format t ,@args)
           nil))
 
-(defmacro $ (obj)
+(defmacro $ (obj &optional fake)
   `(progn (funcall lips::*internal-write-update-state*
-                   ,obj)
+                   ,obj
+                   ,fake)
           nil))
 
 (defmacro % (&rest args)
