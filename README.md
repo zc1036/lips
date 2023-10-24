@@ -108,7 +108,7 @@ You can set the variable `LIPS:*PARAGRAPH-BEGIN*` and `LIPS:*PARAGRAPH-END*` to 
 Set `LIPS:*USE-SMART-QUOTES*` to `t` to enable smart-quoting. Smart-quoting respects opening braces, brackets, parentheses, and dashes.
 
     \(setv lips:*use-smart-quotes* t)
-    And "then" there 'were' none
+    And "then" there ('were') none
 
 Produces
 
@@ -128,7 +128,7 @@ Produces
 
     Someone once said: “These are dumb-quotes: " ' don’t they look silly?”
 
-The `\` starts reading a string, the literal single quote is escaped
+The `\` starts reading a Lisp string, and the literal double quote inside is escaped
 with a backslash (this is Lisp string reader syntax, not the lips
 macro backslash) inside it.
 
