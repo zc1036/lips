@@ -22,6 +22,7 @@
 (defparameter *paragraph-end* nil)
 (defparameter *finish-hooks* nil)
 (defparameter *hot-char* #\\)
+(defparameter *silent-char* #\-)
 
 (defun princ-if (x)
    "If the given object is a function, prints the return value when
@@ -99,7 +100,7 @@
 
 (defparameter *internal-write-update-state* nil)
 
-(defun read-interpolated-string (&optional arg-char end-char (allow-eof t))
+(defun read-interpolated-string (&optional arg-char end-char (allow-eof t) error-char)
   (let ((output-string (make-array 0 :element-type 'character :fill-pointer 0 :adjustable t)))
     (with-output-to-string (output-stream output-string)
       (let ((*standard-output* output-stream)
@@ -114,6 +115,8 @@
              while char
              do
                (cond
+                 ((and error-char (char= char error-char))
+                  (error "Unexpected }"))
                  ((and *use-smart-quotes*
                        (or (char= char #\") (char= char #\')))
                   (write-char-update-state last-char in-paragraph allow-eof
@@ -127,6 +130,11 @@
                            (and end-char (char= next-char end-char))
                            (and arg-char (char= next-char arg-char)))
                        (write-char-update-state last-char in-paragraph allow-eof (read-char)))
+                      ((char= next-char *silent-char*)
+                       ;; When *SILENT-CHAR* follows *HOT-CHAR*, evaluate the
+                       ;; following form for side effects only.
+                       (read-char)
+                       (eval (macroexpand (read))))
                       ;; any other char, evaluate the lisp code
                       (t
                        (let ((result (eval (macroexpand (read)))))
@@ -168,12 +176,15 @@
 ;; We need { to be a terminating macro character so that, in cases
 ;; like \blah{1}, READ will read the symbol |BLAH| instead of the symbol
 ;; |BLAH{1}|
+;; We also want } to be a terminating macro char so that we can catch unbalanced
+;; braces that are adjacent to words like "blah}".
 (set-macro-character #\{ nil nil *lips-readtable*)
+(set-macro-character #\} nil nil *lips-readtable*)
 
 (defun process-stream (stream)
   (let ((*standard-input* stream)
         (*readtable* *lips-readtable*))
-    (multiple-value-bind (result writer-fn) (read-interpolated-string)
+    (multiple-value-bind (result writer-fn) (read-interpolated-string nil nil t #\})
       (write-string result)
       writer-fn)))
 

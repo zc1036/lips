@@ -37,7 +37,7 @@ In this example, we begin with a `\` character to make lips evaluate our `MACRO`
 
 ### What's actually going on there?
 
-Under the hood, `MACRO` is defining a Lisp symbol macro named `HELLO`. The symbol macro gets expanded when `\` calls `MACROEXPAND` on the next Lisp object it reads, and the expansion reads _N_ arguments and calls your function with them. 
+Under the hood, `MACRO` is defining a Lisp symbol macro named `HELLO`. The symbol macro gets expanded when `\` calls `MACROEXPAND` on the next Lisp object it reads, and the expansion reads _N_ arguments and calls your function with them.
 
 Because it works this way, you can put any Lisp code after the `\`.
 
@@ -46,6 +46,18 @@ That means that you are by no means limited to using `MACRO`. Everything you see
 btw, to cause lips to emit a literal `\` character in your writing, escape it by prefixing it with another `\` like so: `\\`.
 
 ## Deeper topics
+
+### Ignoring evaluation results
+
+You can follow the backslash with a `-` character to just evaluate the following form for side effects, and not print the result.
+
+    \-(defparameter foo nil)
+    \-(push 1 foo)
+    \-(push 2 foo)
+    \-(push 3 foo)
+    \foo
+
+Only the last line `\foo` prints anything, even though `DEFPARAMETER` and `PUSH` both return non-NIL values.
 
 ### Case sensitivity
 
@@ -58,9 +70,9 @@ By calling the `READ-MACRO-ARGUMENT` function in your code, you can read any num
 
     \(defsym read-2 ()
        (% "Got ~a and ~a!" (read-macro-argument) (read-macro-argument)))
-    
+
     \read-2{hey}{ho}
-    
+
 Produces
 
     Got hey and ho!
@@ -70,7 +82,7 @@ Produces
 You can use macros inside macros just fine. Using the `READ-2` example from above:
 
     \read-2{outside-1-a \read-2{inside-1}{inside-2} outside-1-b}{outside-2}
-    
+
 Produces
 
     Got outside-1-a Got inside-1 and inside-2! outside-1-b and outside-2
@@ -84,7 +96,7 @@ Braces can be nested in macro arguments just fine, but they have to be balanced.
 Produces
 
     Got one{{}}two and three!
-    
+
 To use an unbalanced closing or opening brace, escape it with backslash like `\}`.
 
 ### Paragraphs
@@ -101,7 +113,7 @@ Set `LIPS:*USE-SMART-QUOTES*` to `t` to enable smart-quoting. Smart-quoting resp
 Produces
 
     And “then” there (‘were’) none
-    
+
 ### Avoiding smart quotes
 
 Sometimes you'll want to suppress smart-quote behavior in a particular
@@ -110,11 +122,11 @@ argument is read, so by the time your macro sees the text, it already
 has smart-quotes. To get around any kind of formatting, just use `\`
 to evaluate and print a Lisp string:
 
-    Someone once said: "These are dumb-quotes: \"\" '"  don't they look silly?" 
-    
+    Someone once said: "These are dumb-quotes: \"\" '"  don't they look silly?"
+
 Produces
 
-    Someone once said: “These are dumb-quotes: " ' don’t they look silly?” 
+    Someone once said: “These are dumb-quotes: " ' don’t they look silly?”
 
 The `\` starts reading a string, the literal single quote is escaped
 with a backslash (this is Lisp string reader syntax, not the lips
@@ -123,7 +135,7 @@ macro backslash) inside it.
 Notice that I have to use two spaces after the end of the string
 object. That's because the Lisp reader consumes a single space, if
 present, after any form it reads.
-    
+
 ### Markup and formatting
 
 lips tracks certain state based on what gets output to the file. For example, it needs to know what the last character was, because if it's whitespace, then the next " character will be a left-side smart quote, and if not, it will be a right-side smart quote. Another example is that it needs to know when to emit paragraph tags (like `<p>` for HTML).
@@ -157,13 +169,13 @@ Example:
 
     (macro bold (something)
       (% "<b>~a</b>" something))
-    
+
     (macro bolditalic (whatever)
       (% "<i>~a</i>" ($bold whatever)))
-      
+
     \bold{hi}
     \bolditalic{bye}
-    
+
 Produces
 
     <b>hi</b>
@@ -234,12 +246,12 @@ Adds the function to the beginning of a list of functions that are called when t
 ### `*PARAGRAPH-END*` and `*PARAGRAPH-BEGIN*`
 
 These values or functions are printed or called, if non-NIL, between paragraphs.
-    
-### `*USE-SMART-QUOTES*` 
- 
+
+### `*USE-SMART-QUOTES*`
+
 When non-NIL, converts " and ' to smart-quote equivalents. Respects opening braces, brackets, parentheses, and dashes.
 
-### `*HOT-CHAR*` 
+### `*HOT-CHAR*`
 
 The character used to set off macro expansions. Defaults to `\`.
 
@@ -254,7 +266,7 @@ Input:
 Output:
 
     ohayou\\\
-    
+
 ### Simple macros
 
 Input:
@@ -263,16 +275,16 @@ Input:
        (% "Hello there, ~a ~a!~%" firstname lastname)
        ($ "Goodbye ")
        ($ (list 1 2 3)))
-    
+
     \hello{Jimbones}{McGee}
-    
+
 Output:
 
     Hello there, Jimbones Mcgee!
     Goodbye (1 2 3)
-    
-This demonstrates usage of the `%` and `$` functions. The `$` function can print any object (a list in this example). 
-    
+
+This demonstrates usage of the `%` and `$` functions. The `$` function can print any object (a list in this example).
+
 ### Variable definition
 
 Input:
@@ -283,7 +295,7 @@ Input:
 Output:
 
     text
-    
+
 ### Function definition/calling
 
 Input:
@@ -292,7 +304,7 @@ Input:
         (% "Sum of ~{~a ~}: " nums)
         ($ (apply #'+ nums)))
     \(add 1 2 3)
-    
+
 Output:
 
     Sum of 1 2 3 : 6
@@ -305,7 +317,7 @@ Input:
 
     \(add-finish-hook (lambda () "Bye there!"))
     Hi there!
-    
+
 Output:
 
     Hi there!
@@ -320,31 +332,31 @@ Input:
     \(progn
         ;; Load ASDF, then
         (asdf:load-system :drakma)
-    
+
         (let ((input (drakma:http-request "http://google.com"
                                           :want-stream t)))
             #| Use input... |#
             (close input)))
-            
+
 ### Automatic footnote generation
 
 Here's an example of using all the above to automatically generate footnotes:
 
 
     \(defv *footnotes* nil)
-    
+
     \(macro footnote (text)
        (push text *footnotes*)
        (% "[~a]" (length *footnotes*)))
-    
+
     \(defn print-footnotes ()
        ($! #\Newline)
        (loop for note in (reverse *footnotes*) for i from 1 to (length *footnotes*) do
          (%! "~a. " i)
          (% "~a~%" note)))
-    
+
     \(add-finish-hook #'print-footnotes)
-    
+
     Lorem \footnote{footnote 1} ipsum \footnote{footnote 2} dolor sit amet \footnote{footnote 3}.
 
 Produces
@@ -354,7 +366,7 @@ Produces
     1. footnote 1
     2. footnote 2
     3. footnote 3
-    
+
 And if you rearrange the footnotes in the text, the numbering will update automatically. Now you don't have to manually manage footnotes like you did in Markdown, and you didn't have to make some special build of the parser to do it!
 
 ## Dependencies
