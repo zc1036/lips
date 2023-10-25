@@ -33,7 +33,7 @@ This produces the text
 
     Hello there, Jimbones Mcgee!
 
-In this example, we begin with a `\` character to make lips evaluate our `MACRO` form as code. The `MACRO` call defines a textual macro named `HELLO`, taking one argument, that we can call below with the `\hello{args...}` syntax.
+In this example, we begin with a `\` character to make lips evaluate our `MACRO` form as code. The `MACRO` call defines a textual macro named `HELLO`, taking two arguments, that we can call below with the `\hello{arg1}{arg2}` syntax.
 
 ### What's actually going on there?
 
